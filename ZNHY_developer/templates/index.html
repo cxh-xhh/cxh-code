@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能会议记录生成器</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>智能会议记录生成器</h1>
+            <p>输入会议内容，自动生成规范的会议记录文档</p>
+        </header>
+
+        <div class="main-content">
+            <div class="input-section">
+                <textarea id="meetingText" placeholder="请输入会议内容...例如：下周三下午三点，我想在公司三楼的大会议室开个会，参会的有市场部的李明、张娜，技术部的王磊..."></textarea>
+                <button id="generateBtn" onclick="generateDocument()">生成会议记录</button>
+            </div>
+
+            <div class="example-section">
+                <h3>示例：</h3>
+                <div class="example-text">
+                    "下周三下午三点，我想在公司三楼的大会议室开个会，参会的有市场部的李明、张娜，技术部的王磊，还有新来的实习生赵晓雨。会议主要说三件事，一是讨论下季度的产品推广方案，特别是线上广告投放的预算分配，李明你准备下相关数据；二是同步下新版APP的研发进度，王磊负责这块；三是安排下月底的团建活动，张娜你牵头，大家看看想去近郊的民宿还是去爬山，赵晓雨可以多听听大家的意见。对了，会议大概开两个小时，记得提前把会议资料发到群里。"
+                </div>
+            </div>
+
+            <div class="loading" id="loading" style="display: none;">
+                正在生成会议记录，请稍候...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function generateDocument() {
+            const text = document.getElementById('meetingText').value.trim();
+            const generateBtn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+
+            if (!text) {
+                alert('请输入会议内容');
+                return;
+            }
+
+            // 显示加载中
+            generateBtn.disabled = true;
+            loading.style.display = 'block';
+
+            // 发送请求
+            fetch('/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: text })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.error || '生成失败') });
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // 创建下载链接
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = '会议记录.docx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                alert(error.message);
+            })
+            .finally(() => {
+                generateBtn.disabled = false;
+                loading.style.display = 'none';
+            });
+        }
+
+        // 点击示例文本填充到输入框
+        document.querySelector('.example-text').addEventListener('click', function() {
+            document.getElementById('meetingText').value = this.textContent.trim();
+        });
+    </script>
+</body>
+</html>

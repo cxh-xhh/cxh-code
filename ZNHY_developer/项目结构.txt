@@ -1,0 +1,12 @@
+meeting-minutes-generator/
+├── app.py                 # 主应用文件
+├── requirements.txt       # 依赖包
+├── templates/
+│   ├── index.html        # 前端页面
+│   └── meeting_template.docx  # Word模板
+├── static/
+│   └── style.css         # 样式文件
+├── utils/
+│   ├── llm_parser.py     # 大模型解析器
+│   └── word_generator.py # Word生成器
+└── README.md             # 说明文档
